@@ -37,3 +37,24 @@ export async function fetchJson<T>(url: string, attempts = 3, retryDelayMs = 200
 
   throw lastError;
 }
+
+/**
+ * Map over items with at most `concurrency` requests in flight —
+ * fast enough for hundreds of detail pages, gentle enough on the bank's server.
+ */
+export async function mapLimit<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  return results;
+}
