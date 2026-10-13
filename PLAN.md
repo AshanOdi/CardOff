@@ -122,3 +122,17 @@ One logical change per commit, small enough to explain in one sentence.
 - Real data only — no mock/fake offers, same principle as the investigation we already did.
 - Commit after each working step, not one giant commit at the end.
 - If something breaks (e.g. HNB API shape changes), we debug it together as a real learning moment, not just silently patch it.
+
+## 9. Progress log
+
+**2026-10-13**
+- Schema, model, DB helper, HNB scraper, discount parser, upsert/expiry, runner — Week 1 done.
+- Found that `get_all_pcard_promotions` returns a random 20 per call; switched to
+  `get_all_web_card_promos?limit=1000` → ~850 real offers instead of 20.
+- Added an `installment` offer type: ~70% of HNB offers are 0% installment plans.
+- Expiry has a guard: if a run scrapes < 50% of currently active offers, it skips
+  "not listed" expiry so one broken run can't empty the site.
+- API route, offer grid, URL-param filter bar, pagination, empty/loading/error states.
+- CI (type-check, tests, build) and daily scrape workflow added.
+- **Next:** create Atlas M0 cluster, add `MONGODB_URI` repo secret, deploy to Vercel,
+  then decide on Commercial Bank scraper.
