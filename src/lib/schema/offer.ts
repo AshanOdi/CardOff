@@ -5,7 +5,7 @@
 import { z } from "zod";
 
 export const BANKS = ["hnb", "commercial_bank"] as const;
-export const OFFER_TYPES = ["percentage", "cashback", "other"] as const;
+export const OFFER_TYPES = ["percentage", "cashback", "installment", "other"] as const;
 export const CATEGORIES = [
   "dining",
   "travel",

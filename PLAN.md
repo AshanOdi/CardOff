@@ -60,7 +60,7 @@ These are all realistic **"v2" stretch ideas** once the core pipeline works and 
 ```ts
 type Bank = "hnb" | "commercial_bank"; // grows over time
 
-type OfferType = "percentage" | "cashback" | "other"; // simplified from card-max's 8 types
+type OfferType = "percentage" | "cashback" | "installment" | "other"; // simplified from card-max's 8 types
 
 interface Offer {
   bank: Bank;
