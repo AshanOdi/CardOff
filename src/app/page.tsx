@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { FilterBar } from "@/components/FilterBar";
 import { OfferCard } from "@/components/OfferCard";
+import { Pagination } from "@/components/Pagination";
 import { getOffers, parseFilters } from "@/lib/offers";
 
 // Always read fresh from the DB — the scraper updates it daily.
@@ -10,7 +11,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function HomePage({ searchParams }: { searchParams: SearchParams }) {
   const filters = parseFilters(await searchParams);
-  const { offers, total } = await getOffers(filters);
+  const { offers, total, page, totalPages } = await getOffers(filters);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
@@ -36,6 +37,12 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
           </li>
         ))}
       </ul>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        params={{ bank: filters.bank, category: filters.category, type: filters.type, q: filters.q }}
+      />
     </main>
   );
 }
