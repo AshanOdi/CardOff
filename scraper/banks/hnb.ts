@@ -54,11 +54,14 @@ export async function scrapeHnb(): Promise<OfferInput[]> {
     console.warn(`[hnb] list has ${list.total} promotions but only ${list.data.length} returned`);
   }
 
+  // The list repeats a promotion once per category it's filed under.
+  const unique = [...new Map(list.data.map((p) => [p.id, p])).values()];
+
   const today = new Date();
-  const active = list.data.filter(
+  const active = unique.filter(
     (p) => p.cardType?.toLowerCase().includes("credit") && !isPast(parseDate(p.to, "end"), today)
   );
-  console.log(`[hnb] ${list.data.length} promotions → ${active.length} active credit card promotions`);
+  console.log(`[hnb] ${unique.length} unique promotions → ${active.length} active credit card promotions`);
 
   const details = await mapLimit(active, DETAIL_CONCURRENCY, (p) =>
     fetchJson<HnbDetail>(DETAIL_URL(p.id)).catch((err) => {
