@@ -45,7 +45,7 @@ async function main() {
       const { inserted, updated } = await upsertOffers(offers);
       const expired = await expireOffers(bank, offers);
       const secs = ((Date.now() - started) / 1000).toFixed(1);
-      console.log(`[${bank}] ${offers.length} scraped · ${inserted} new · ${updated} changed · ${expired} expired (${secs}s)`);
+      console.log(`[${bank}] ${offers.length} scraped · ${inserted} new · ${updated} refreshed · ${expired} expired (${secs}s)`);
     } catch (err) {
       failed++;
       console.error(`[${bank}] FAILED:`, err);
