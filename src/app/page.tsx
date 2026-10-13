@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { FilterBar } from "@/components/FilterBar";
 import { OfferCard } from "@/components/OfferCard";
 import { getOffers, parseFilters } from "@/lib/offers";
 
@@ -18,6 +20,10 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
           Current Sri Lankan credit card offers, pulled straight from the banks every day.
         </p>
       </header>
+
+      <Suspense>
+        <FilterBar />
+      </Suspense>
 
       <p className="mb-4 text-sm text-neutral-500">
         {total} offer{total === 1 ? "" : "s"}
