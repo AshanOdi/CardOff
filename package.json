@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "scrape": "tsx scraper/run.ts"
+    "scrape": "tsx scraper/run.ts",
+    "test": "tsx --test \"scraper/**/*.test.ts\""
   },
   "dependencies": {
     "mongoose": "^8.23.0",
