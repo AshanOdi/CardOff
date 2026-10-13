@@ -30,6 +30,13 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
         {total} offer{total === 1 ? "" : "s"}
       </p>
 
+      {offers.length === 0 && (
+        <div className="rounded-xl border border-dashed border-neutral-300 bg-white px-6 py-16 text-center">
+          <p className="font-medium">No offers match these filters.</p>
+          <p className="mt-1 text-sm text-neutral-500">Try a different category or clear the search.</p>
+        </div>
+      )}
+
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {offers.map((offer) => (
           <li key={offer._id} className="flex">
