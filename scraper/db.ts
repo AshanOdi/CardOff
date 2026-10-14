@@ -1,6 +1,7 @@
 /**
  * Scraper → MongoDB writes: upsert scraped offers and expire the ones that disappeared.
  */
+import { merchantKey } from "../src/lib/merchant";
 import { OfferModel } from "../src/lib/models/offer.model";
 import type { Bank, OfferInput } from "../src/lib/schema/offer";
 
@@ -17,7 +18,7 @@ export async function upsertOffers(offers: OfferInput[]): Promise<UpsertResult> 
     offers.map((offer) => ({
       updateOne: {
         filter: { bank: offer.bank, sourceUrl: offer.sourceUrl },
-        update: { $set: { ...offer, isExpired: false } },
+        update: { $set: { ...offer, merchantKey: merchantKey(offer.merchant), isExpired: false } },
         upsert: true,
       },
     })),
