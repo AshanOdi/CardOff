@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-neutral-50 text-neutral-900">{children}</body>
+      <body className="antialiased bg-neutral-50 text-neutral-900">
+        <SiteHeader />
+        {children}
+      </body>
     </html>
   );
 }
