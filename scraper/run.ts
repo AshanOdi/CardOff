@@ -6,12 +6,13 @@
  */
 import { dbConnect, dbDisconnect } from "../src/lib/db/connect";
 import type { Bank, OfferInput } from "../src/lib/schema/offer";
+import { scrapeComBank } from "./banks/combank";
 import { scrapeHnb } from "./banks/hnb";
 import { expireOffers, upsertOffers } from "./db";
 
 const SCRAPERS: Record<Bank, (() => Promise<OfferInput[]>) | undefined> = {
   hnb: scrapeHnb,
-  commercial_bank: undefined, // planned for week 2
+  commercial_bank: scrapeComBank,
 };
 
 const dryRun = process.argv.includes("--dry-run");
