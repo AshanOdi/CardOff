@@ -142,3 +142,11 @@ One logical change per commit, small enough to explain in one sentence.
 - Daily scrape workflow green on GitHub Actions (needed `0.0.0.0/0` in Atlas Network Access).
 - Deployed to Vercel: https://card-off.vercel.app
 - **Next:** Commercial Bank scraper.
+
+**2026-10-14 (later)**
+- Commercial Bank scraper: listing page + detail pages, 72 credit card offers. Site now has 935 offers.
+- combank.lk has an AWS WAF rate limit (403 after ~75 requests) — throttled detail
+  fetches and added a stop-on-403 circuit breaker so the listing data is always saved.
+- Found payment-plan "commission" percentages being shown as discounts ("9% off");
+  fee clauses are now ignored and non-0% plans are labelled "easy payment plan".
+- Moved category detection to a shared util; numeric HTML entities now decoded.
