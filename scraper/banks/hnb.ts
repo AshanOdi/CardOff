@@ -14,7 +14,8 @@
  *     `content` is HTML with labelled sections:
  *     "Merchant: Fox Kandy  Offer: Up to 50% off …  Period: …  Eligibility: …"
  */
-import { OfferInputSchema, type Category, type OfferInput, type OfferType } from "../../src/lib/schema/offer";
+import { OfferInputSchema, type OfferInput } from "../../src/lib/schema/offer";
+import { detectCategory } from "../utils/category";
 import { fetchJson, mapLimit } from "../utils/http";
 import { parseDiscount } from "../utils/parseDiscount";
 import { squish, stripHtml } from "../utils/text";
@@ -117,20 +118,6 @@ export function section(text: string, label: string): string | undefined {
 export function merchantFromTitle(title: string): string | undefined {
   const idx = title.toLowerCase().lastIndexOf(" at ");
   return idx === -1 ? undefined : title.slice(idx + 4).trim() || undefined;
-}
-
-function detectCategory(text: string, offerType: OfferType): Category {
-  const t = text.toLowerCase();
-  if (/dine|din-in|dining|restaurant|cafe|pizza|burger|taco|buffet|bakery|lunch|dinner|take-?away/.test(t)) return "dining";
-  if (/hotel|resort|villa|room only|\b(bb|hb|fb)\b|half board|full board|travel|airline|holiday|tour/.test(t)) return "travel";
-  if (/supermarket|grocery|groceries|keells|cargills|arpico|glomark|laugfs super/.test(t)) return "groceries";
-  if (/fuel|petrol|filling station/.test(t)) return "fuel";
-  if (/optic|spectacle|frames|eye care|hospital|pharmacy|clinic|medical|hearing|dental|channel+ing/.test(t)) return "health";
-  if (/cinema|movie|theme park|concert|event/.test(t)) return "entertainment";
-  if (/online|e-commerce|website/.test(t)) return "online";
-  if (/electronic|phone|mobile|furniture|bedding|paint|fashion|clothing|jewel|watch|bicycle|bike|appliance|machine|selected (items|products|brands)/.test(t)) return "shopping";
-  // Installment plans are almost always retail purchases.
-  return offerType === "installment" || /instal{1,2}ment/.test(t) ? "shopping" : "other";
 }
 
 function imageUrl(thumb: string | undefined): string | undefined {
