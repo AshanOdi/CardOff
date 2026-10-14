@@ -46,6 +46,7 @@ export type OfferInput = z.infer<typeof OfferInputSchema>;
 /** An offer as stored in the DB (adds lifecycle fields). */
 export type Offer = OfferInput & {
   _id: string;
+  merchantKey?: string;
   isExpired: boolean;
   createdAt: Date;
   updatedAt: Date;
