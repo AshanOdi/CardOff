@@ -1,4 +1,4 @@
-import type { Offer } from "@/lib/schema/offer";
+import type { Bank, Offer } from "@/lib/schema/offer";
 import { BANK_LABELS, CATEGORY_LABELS, daysUntil, formatDate } from "@/lib/labels";
 
 const BADGE_STYLES: Record<Offer["offerType"], string> = {
@@ -8,7 +8,8 @@ const BADGE_STYLES: Record<Offer["offerType"], string> = {
   other: "bg-neutral-100 text-neutral-700 ring-neutral-500/20",
 };
 
-export function OfferCard({ offer }: { offer: Offer }) {
+/** `alsoAt`: other banks with an offer at the same merchant (see /compare). */
+export function OfferCard({ offer, alsoAt = [] }: { offer: Offer; alsoAt?: Bank[] }) {
   const endsIn = offer.validUntil ? daysUntil(offer.validUntil) : undefined;
   const endingSoon = endsIn !== undefined && endsIn <= 7;
 
@@ -51,6 +52,12 @@ export function OfferCard({ offer }: { offer: Offer }) {
           {offer.merchant ?? offer.title}
         </h2>
         {offer.description && <p className="line-clamp-2 text-sm text-neutral-600">{offer.description}</p>}
+
+        {alsoAt.length > 0 && (
+          <p className="text-xs font-medium text-sky-700">
+            Also at {alsoAt.map((b) => BANK_LABELS[b]).join(", ")} — see Compare banks
+          </p>
+        )}
 
         {offer.validUntil && (
           <p className={`mt-auto pt-2 text-xs ${endingSoon ? "font-medium text-amber-700" : "text-neutral-500"}`}>
