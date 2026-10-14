@@ -50,3 +50,9 @@ test("unrecognised falls back to other", () => {
   assert.equal(r.offerType, "other");
   assert.equal(r.discountPercentage, undefined);
 });
+
+test("easy payment plans count as installment", () => {
+  const r = parseDiscount("Enjoy Special Credit Card Easy Payment Plans for the Student and Members of AICPA");
+  assert.equal(r.offerType, "installment");
+  assert.equal(r.discountLabel, "0% installments");
+});

@@ -5,7 +5,7 @@
  * Priority (first match wins):
  *   1. cashback     "10% cashback", "cashback up to Rs. 5,000"
  *   2. percentage   any non-zero "N%" — "Up to 50% off", "20% discount"
- *   3. installment  "0% installments", "06 months 0% installment plans"
+ *   3. installment  "0% installments", "06 months 0% installment plans", "Easy Payment Plans"
  *   4. other
  *
  * Combined offers ("20% off + 0% installments") count as percentage,
@@ -43,7 +43,7 @@ export function parseDiscount(raw: string): ParsedDiscount {
     };
   }
 
-  if (/\b0\s*%|instal{1,2}ments?|interest[\s-]*free/.test(lower)) {
+  if (/\b0\s*%|instal{1,2}ments?|interest[\s-]*free|easy\s+payment/.test(lower)) {
     const months = maxInstallmentMonths(lower);
     return {
       offerType: "installment",
