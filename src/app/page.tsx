@@ -4,6 +4,7 @@ import { OfferCard } from "@/components/OfferCard";
 import { Pagination } from "@/components/Pagination";
 import { getMultiBankMerchants } from "@/lib/compare";
 import { getOffers, parseFilters } from "@/lib/offers";
+import type { Bank } from "@/lib/schema/offer";
 
 // Always read fresh from the DB — the scraper updates it daily.
 export const dynamic = "force-dynamic";
@@ -14,7 +15,8 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   const filters = parseFilters(await searchParams);
   const [{ offers, total, page, totalPages }, multiBank] = await Promise.all([
     getOffers(filters),
-    getMultiBankMerchants(),
+    // Only powers the "Also at …" hint — never let it break the offer list.
+    getMultiBankMerchants().catch(() => new Map<string, Bank[]>()),
   ]);
 
   return (
