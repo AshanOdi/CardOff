@@ -150,3 +150,9 @@ One logical change per commit, small enough to explain in one sentence.
 - Found payment-plan "commission" percentages being shown as discounts ("9% off");
   fee clauses are now ignored and non-0% plans are labelled "easy payment plan".
 - Moved category detection to a shared util; numeric HTML entities now decoded.
+
+**2026-10-14 (evening)**
+- Compare banks: `merchantKey` normaliser + backfill, `/compare` page (13 merchants
+  across both banks), "Also at …" hint on offer cards, site header with navigation.
+- README rewritten for portfolio use, with screenshots from the live site.
+- 2-week plan complete. Remaining ideas are in the README roadmap.
