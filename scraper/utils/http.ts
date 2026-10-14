@@ -11,17 +11,17 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** GET a JSON endpoint, retrying on network errors and 5xx responses. */
-export async function fetchJson<T>(url: string, attempts = 3, retryDelayMs = 2000): Promise<T> {
+/** GET a URL, retrying on network errors and 5xx responses (4xx fails immediately). */
+async function fetchWithRetry(url: string, accept: string, attempts: number, retryDelayMs: number): Promise<Response> {
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
+        headers: { "User-Agent": USER_AGENT, Accept: accept, "Accept-Language": "en-US,en;q=0.9" },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
-      if (res.ok) return (await res.json()) as T;
+      if (res.ok) return res;
       // 4xx won't fix itself on retry
       if (res.status < 500) throw new Error(`HTTP ${res.status} fetching ${url}`);
       lastError = new Error(`HTTP ${res.status} fetching ${url}`);
@@ -36,6 +36,16 @@ export async function fetchJson<T>(url: string, attempts = 3, retryDelayMs = 200
   }
 
   throw lastError;
+}
+
+export async function fetchJson<T>(url: string, attempts = 3, retryDelayMs = 2000): Promise<T> {
+  const res = await fetchWithRetry(url, "application/json", attempts, retryDelayMs);
+  return (await res.json()) as T;
+}
+
+export async function fetchHtml(url: string, attempts = 3, retryDelayMs = 2000): Promise<string> {
+  const res = await fetchWithRetry(url, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8", attempts, retryDelayMs);
+  return res.text();
 }
 
 /**
