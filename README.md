@@ -1,5 +1,7 @@
 # Lanka Card Deals
 
+**Live:** https://card-off.vercel.app
+
 A small, free-tier-only Sri Lankan bank credit card offers aggregator — a portfolio
 project inspired by the architecture of a larger crawler+Next.js project, rebuilt from
 scratch, simpler, and without any paid services.
@@ -62,5 +64,5 @@ docker run -d --name lcd-mongo -p 127.0.0.1:27017:27017 mongo
 
 ## Status
 
-✅ HNB scraper (~850 live offers) · ✅ API · ✅ offer grid + filters + pagination · ✅ CI · ✅ daily cron
-⏳ Vercel deploy · ⏳ Commercial Bank scraper
+✅ HNB scraper (~860 live offers) · ✅ API · ✅ offer grid + filters + pagination · ✅ CI · ✅ daily cron · ✅ deployed on Vercel
+⏳ Commercial Bank scraper
