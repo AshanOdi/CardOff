@@ -18,8 +18,9 @@ Next.js (App Router) · TypeScript · MongoDB Atlas (free M0) · Mongoose · Zod
 ```
 GitHub Actions (daily 06:00 SL time)
   └─ scraper/run.ts
-       └─ scraper/banks/hnb.ts      fetch HNB's public promotions JSON API
-            └─ parseDiscount        classify: percentage / cashback / installment / other
+       ├─ scraper/banks/hnb.ts      HNB: public promotions JSON API
+       ├─ scraper/banks/combank.ts  Commercial Bank: server-rendered HTML listing + detail pages
+       └─ parseDiscount             classify: percentage / cashback / installment / other
        └─ scraper/db.ts             upsert by bank+sourceUrl, expire ended/removed offers
                                     ▼
                               MongoDB Atlas
@@ -37,12 +38,24 @@ uses `get_all_web_card_promos?limit=1000` (the full ~900-promotion list) plus
 `get_web_card_promo?id=` for each offer's details. Logos are served from
 `assets.hnb.lk/atdi/`.
 
+### Commercial Bank data source
+
+`combank.lk/rewards-promotions` lists every offer on one page (the category tabs are
+anchors). Detail pages add the offer terms used as the description. The site sits behind
+an AWS WAF rate limit (~75 requests in a few minutes → CloudFront 403), so detail pages
+are fetched 2 at a time with a delay, and the scraper stops fetching details after the
+first 403 — offers are still saved from the listing data.
+
+Payment-plan offers list fees like "12 Months – 3.5%". Those are commission, not
+discounts, so they're labelled "easy payment plan" — "0%" is only shown when the bank
+says 0%.
+
 ## Local setup
 
 ```bash
 npm install
 cp .env.example .env.local   # fill in MONGODB_URI
-npm run scrape               # fill the DB with real offers (~90s)
+npm run scrape               # fill the DB with real offers (~2–3 min)
 npm run dev
 ```
 
@@ -57,12 +70,12 @@ docker run -d --name lcd-mongo -p 127.0.0.1:27017:27017 mongo
 
 | Command | What it does |
 |---|---|
-| `npm run scrape` | Scrape all banks and write to MongoDB |
+| `npm run scrape` | Scrape all banks (HNB, Commercial Bank) and write to MongoDB |
 | `npm run scrape -- --dry-run` | Scrape and print a summary — no DB needed |
 | `npm test` | Unit tests (Node's built-in test runner) |
 | `npm run type-check` | TypeScript check |
 
 ## Status
 
-✅ HNB scraper (~860 live offers) · ✅ API · ✅ offer grid + filters + pagination · ✅ CI · ✅ daily cron · ✅ deployed on Vercel
-⏳ Commercial Bank scraper
+✅ HNB (~860 offers) + Commercial Bank (~70 offers) scrapers · ✅ API · ✅ offer grid + filters + pagination
+✅ CI · ✅ daily cron · ✅ deployed on Vercel
