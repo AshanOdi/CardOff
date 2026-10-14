@@ -10,6 +10,9 @@
  *
  * Combined offers ("20% off + 0% installments") count as percentage,
  * since the discount is the headline benefit.
+ *
+ * Percentages in fee clauses ("Commission … 12 Months – 3.5%", "handling fees 2%")
+ * are costs, not discounts, so they are ignored. Text is split into clauses on " · ".
  */
 import type { OfferType } from "../../src/lib/schema/offer";
 import { squish } from "./text";
@@ -21,17 +24,19 @@ export interface ParsedDiscount {
 }
 
 const PERCENT_RE = /(up\s+to\s+)?(\d{1,3}(?:\.\d+)?)\s*%/gi;
+const FEE_RE = /commission|handling\s+fees?|processing\s+fees?|interest\s+rate/i;
 
 export function parseDiscount(raw: string): ParsedDiscount {
   const text = squish(raw);
   const lower = text.toLowerCase();
-  const maxPct = maxNonZeroPercentage(text);
+  const benefitText = text.split(" · ").filter((clause) => !FEE_RE.test(clause)).join(" · ");
+  const maxPct = maxNonZeroPercentage(benefitText);
 
   if (/cash\s*back/.test(lower)) {
     return {
       offerType: "cashback",
       discountPercentage: maxPct,
-      discountLabel: maxPct ? `${upTo(text)}${maxPct}% cashback` : "Cashback",
+      discountLabel: maxPct ? `${upTo(benefitText)}${maxPct}% cashback` : "Cashback",
     };
   }
 
@@ -39,15 +44,18 @@ export function parseDiscount(raw: string): ParsedDiscount {
     return {
       offerType: "percentage",
       discountPercentage: maxPct,
-      discountLabel: `${upTo(text)}${maxPct}% off`,
+      discountLabel: `${upTo(benefitText)}${maxPct}% off`,
     };
   }
 
-  if (/\b0\s*%|instal{1,2}ments?|interest[\s-]*free|easy\s+payment/.test(lower)) {
+  if (/\b0\s*%|instal{1,2}ments?|interest[\s-]*free|easy\s+payment|payment\s+(?:plan|conversion)/.test(lower)) {
     const months = maxInstallmentMonths(lower);
+    // Only promise "0%" when the bank says so — many payment plans carry a fee.
+    const zero = /\b0\s*%|interest[\s-]*free/.test(lower);
+    const plan = zero ? "0% installments" : "easy payment plan";
     return {
       offerType: "installment",
-      discountLabel: months ? `Up to ${months} months 0% installments` : "0% installments",
+      discountLabel: months ? `Up to ${months} months ${plan}` : zero ? "0% installments" : "Easy payment plan",
     };
   }
 

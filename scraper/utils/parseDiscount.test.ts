@@ -51,8 +51,24 @@ test("unrecognised falls back to other", () => {
   assert.equal(r.discountPercentage, undefined);
 });
 
-test("easy payment plans count as installment", () => {
+test("easy payment plans count as installment, without promising 0%", () => {
   const r = parseDiscount("Enjoy Special Credit Card Easy Payment Plans for the Student and Members of AICPA");
   assert.equal(r.offerType, "installment");
-  assert.equal(r.discountLabel, "0% installments");
+  assert.equal(r.discountLabel, "Easy payment plan");
+});
+
+test("commission percentages are fees, not discounts", () => {
+  // Real ComBank wording
+  const r = parseDiscount(
+    "This promotional offer is applicable for payments made at Jewellery Merchants only. · " +
+      "Commission will be charged for the transaction value as follow ; -12 Months- 3.50% -18 Months – 5% -24 Months – 7% -36 Months – 9% · " +
+      "Only the transaction above Rs. 25,000/- will be eligible for the Payment Plan Scheme"
+  );
+  assert.deepEqual(r, { offerType: "installment", discountLabel: "Up to 36 months easy payment plan" });
+});
+
+test("handling fees are ignored but a real discount still wins", () => {
+  const r = parseDiscount("Offer – 10% discount · Easy Payment Plans for 06 months & 12 months with below handling fees; -6 Months – 2%");
+  assert.equal(r.offerType, "percentage");
+  assert.equal(r.discountPercentage, 10);
 });
