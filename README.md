@@ -1,54 +1,78 @@
 # Lanka Card Deals
 
+**Every current credit card offer from Sri Lankan banks, in one place, updated daily.**
+
 **Live:** https://card-off.vercel.app
 
-A small, free-tier-only Sri Lankan bank credit card offers aggregator — a portfolio
-project inspired by the architecture of a larger crawler+Next.js project, rebuilt from
-scratch, simpler, and without any paid services.
+![Offer grid](docs/screenshot-home.png)
 
-See [PLAN.md](./PLAN.md) for the full 2-week build plan, scope decisions, and daily
-progress log.
+Banks publish their card offers on separate sites, each with its own layout. This
+app scrapes them every morning, cleans the data into one format, and lets you search,
+filter, and compare offers for the same merchant across banks.
+
+- **~935 live offers** from HNB and Commercial Bank
+- **Compare banks:** merchants offered by more than one bank, side by side, with the best deal highlighted
+- **Filters** by category, offer type (discount / cashback / installment), bank, and merchant search, all kept in the URL so links are shareable
+- **Runs on free tiers only:** Vercel Hobby, MongoDB Atlas M0, GitHub Actions
+
+| Compare banks | Mobile |
+|---|---|
+| ![Compare page](docs/screenshot-compare.png) | ![Mobile view](docs/screenshot-mobile.png) |
 
 ## Stack
 
-Next.js (App Router) · TypeScript · MongoDB Atlas (free M0) · Mongoose · Zod · Tailwind CSS · GitHub Actions
+Next.js 15 (App Router, Server Components) · TypeScript · MongoDB Atlas + Mongoose · Zod ·
+Tailwind CSS · GitHub Actions · Vercel · Node's built-in test runner
 
 ## How it works
 
 ```
-GitHub Actions (daily 06:00 SL time)
+GitHub Actions — daily 06:00 Sri Lanka time
   └─ scraper/run.ts
-       ├─ scraper/banks/hnb.ts      HNB: public promotions JSON API
-       ├─ scraper/banks/combank.ts  Commercial Bank: server-rendered HTML listing + detail pages
-       └─ parseDiscount             classify: percentage / cashback / installment / other
-       └─ scraper/db.ts             upsert by bank+sourceUrl, expire ended/removed offers
+       ├─ banks/hnb.ts       HNB: public JSON API (list + per-offer detail)
+       ├─ banks/combank.ts   Commercial Bank: server-rendered HTML (listing + detail pages)
+       ├─ parseDiscount      classify: percentage / cashback / installment / other
+       ├─ category           keyword-based category detection
+       └─ db.ts              bulk upsert by bank + sourceUrl, expire ended or removed offers
                                     ▼
                               MongoDB Atlas
                                     ▼
 Next.js on Vercel
-  ├─ /                server-rendered offer grid, filters kept in the URL
-  └─ /api/offers      JSON API: ?bank= &category= &type= &q= &page=
+  ├─ /             offer grid, server-rendered, filters in the URL
+  ├─ /compare      merchants with offers from 2+ banks
+  └─ /api/offers   JSON API: ?bank= &category= &type= &q= &page=
 ```
 
-### HNB data source
+Each scraper validates every offer with the same Zod schema before it reaches the database,
+so a layout change at a bank shows up as skipped offers in the logs instead of bad data on the site.
 
-HNB's site loads promotions from `venus.hnb.lk`. The endpoint most people find first,
-`get_all_pcard_promotions`, returns a **random 20 promotions per call**. The scraper
-uses `get_all_web_card_promos?limit=1000` (the full ~900-promotion list) plus
-`get_web_card_promo?id=` for each offer's details. Logos are served from
-`assets.hnb.lk/atdi/`.
+## Problems solved along the way
 
-### Commercial Bank data source
+**HNB's obvious API returns a random sample.** `venus.hnb.lk/api/get_all_pcard_promotions`
+(the endpoint most scrapers use) returns a random 20 promotions per call. Reading HNB's
+frontend bundle turned up `get_all_web_card_promos?limit=1000`, the full ~900-item
+list, plus a per-offer detail endpoint and the real image host (`assets.hnb.lk/atdi/`).
+The list also repeats each offer once per category, so the scraper removes duplicates by id.
 
-`combank.lk/rewards-promotions` lists every offer on one page (the category tabs are
-anchors). Detail pages add the offer terms used as the description. The site sits behind
-an AWS WAF rate limit (~75 requests in a few minutes → CloudFront 403), so detail pages
-are fetched 2 at a time with a delay, and the scraper stops fetching details after the
-first 403 — offers are still saved from the listing data.
+**Commercial Bank rate-limits hard.** combank.lk sits behind an AWS WAF that answers
+CloudFront 403 after ~75 requests in a few minutes. Detail pages are fetched 2 at a time
+with a delay, and the scraper stops fetching details after the first 403. Offers are
+still saved from the listing page, so a rate-limited run degrades to "no description"
+rather than "no data".
 
-Payment-plan offers list fees like "12 Months – 3.5%". Those are commission, not
-discounts, so they're labelled "easy payment plan" — "0%" is only shown when the bank
-says 0%.
+**Fees that look like discounts.** Payment-plan terms list commission such as
+"12 Months – 3.5% · 36 Months – 9%", which a naive parser shows as "9% off". Clauses about
+commission or handling fees are excluded from discount parsing, and installment offers say
+"0%" only when the bank does.
+
+**One bad run shouldn't empty the site.** Offers missing from a scrape are marked expired,
+except when a run finds fewer than half the currently active offers. That points to a
+broken scrape, not to the bank removing its offers.
+
+**Matching merchants across banks.** "SPAR Supermarkets" (HNB) and "Spar Supermarket"
+(ComBank) are normalised to the same key. Normalisation is deliberately conservative: removing
+"restaurants" from names would wrongly match "Softlogic Restaurants" with an unrelated
+"Softlogic" retail offer.
 
 ## Local setup
 
@@ -59,7 +83,7 @@ npm run scrape               # fill the DB with real offers (~2–3 min)
 npm run dev
 ```
 
-No Atlas account yet? Run Mongo locally:
+No Atlas account? Run Mongo locally:
 
 ```bash
 docker run -d --name lcd-mongo -p 127.0.0.1:27017:27017 mongo
@@ -70,12 +94,17 @@ docker run -d --name lcd-mongo -p 127.0.0.1:27017:27017 mongo
 
 | Command | What it does |
 |---|---|
-| `npm run scrape` | Scrape all banks (HNB, Commercial Bank) and write to MongoDB |
-| `npm run scrape -- --dry-run` | Scrape and print a summary — no DB needed |
-| `npm test` | Unit tests (Node's built-in test runner) |
+| `npm run scrape` | Scrape all banks and write to MongoDB |
+| `npm run scrape -- --dry-run` | Scrape and print a summary, no DB needed |
+| `npm test` | Unit tests: parsers, scrapers, merchant matching (fixtures from real bank pages) |
 | `npm run type-check` | TypeScript check |
 
-## Status
+CI runs type-check, tests, and a production build on every push.
 
-✅ HNB (~860 offers) + Commercial Bank (~70 offers) scrapers · ✅ API · ✅ offer grid + filters + pagination
-✅ CI · ✅ daily cron · ✅ deployed on Vercel
+## Roadmap
+
+- More banks (Sampath, NTB and BOC need a headless browser because of bot protection)
+- Offer detail page, and "ending soon" sorting
+- Email alerts for a chosen merchant or category
+
+See [PLAN.md](./PLAN.md) for the original two-week plan, scope decisions, and progress log.
