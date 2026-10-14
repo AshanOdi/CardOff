@@ -136,3 +136,9 @@ One logical change per commit, small enough to explain in one sentence.
 - CI (type-check, tests, build) and daily scrape workflow added.
 - **Next:** create Atlas M0 cluster, add `MONGODB_URI` repo secret, deploy to Vercel,
   then decide on Commercial Bank scraper.
+
+**2026-10-14**
+- MongoDB Atlas M0 connected; first scrape loaded 863 HNB offers.
+- Daily scrape workflow green on GitHub Actions (needed `0.0.0.0/0` in Atlas Network Access).
+- Deployed to Vercel: https://card-off.vercel.app
+- **Next:** Commercial Bank scraper.
