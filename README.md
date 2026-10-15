@@ -10,7 +10,7 @@ Banks publish their card offers on separate sites, each with its own layout. Thi
 app scrapes them every morning, cleans the data into one format, and lets you search,
 filter, and compare offers for the same merchant across banks.
 
-- **~935 live offers** from HNB and Commercial Bank
+- **~940 live offers** from HNB and Commercial Bank
 - **Compare banks:** merchants offered by more than one bank, side by side, with the best deal highlighted
 - **Filters** by category, offer type (discount / cashback / installment), bank, and merchant search, all kept in the URL so links are shareable
 - **Runs on free tiers only:** Vercel Hobby, MongoDB Atlas M0, GitHub Actions
