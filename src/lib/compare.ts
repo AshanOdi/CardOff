@@ -36,9 +36,19 @@ export async function getMerchantComparisons(): Promise<MerchantComparison[]> {
     .sort((a, b) => (b.bestPercentage ?? -1) - (a.bestPercentage ?? -1) || a.name.localeCompare(b.name));
 }
 
-/** merchantKey → banks, for the "also at …" hint on offer cards. */
+/**
+ * merchantKey → banks, for the "also at …" hint on offer cards.
+ * Runs on every home page view, so it only groups keys and banks
+ * instead of loading whole offer documents like the compare page.
+ */
 export async function getMultiBankMerchants(): Promise<Map<string, Bank[]>> {
-  return new Map((await getMerchantComparisons()).map((c) => [c.key, c.banks]));
+  await dbConnect();
+  const rows = await OfferModel.aggregate<{ _id: string; banks: Bank[] }>([
+    { $match: { ...activeOfferFilter(), merchantKey: { $type: "string" } } },
+    { $group: { _id: "$merchantKey", banks: { $addToSet: "$bank" } } },
+    { $match: { "banks.1": { $exists: true } } },
+  ]);
+  return new Map(rows.map((r) => [r._id, r.banks]));
 }
 
 /** Prefer a mixed-case spelling ("Cargills Food City" over "CARGILLS FOOD CITY"), then the shortest. */
