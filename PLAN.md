@@ -156,3 +156,14 @@ One logical change per commit, small enough to explain in one sentence.
   across both banks), "Also at …" hint on offer cards, site header with navigation.
 - README rewritten for portfolio use, with screenshots from the live site.
 - 2-week plan complete. Remaining ideas are in the README roadmap.
+
+**2026-10-15**
+- Daily scrape failed for Commercial Bank: combank.lk's WAF blocks GitHub Actions runner
+  IPs (proved with a temporary probe workflow; HNB worked from the same runner).
+- Offers past their end date are now hidden at query time, so a failing bank can't show
+  expired deals.
+- Split scheduling: HNB stays on GitHub Actions (`SCRAPE_BANKS=hnb`); Commercial Bank
+  runs from Vercel Cron via `/api/cron/scrape` (protected by `CRON_SECRET`), both through
+  the shared `scraper/pipeline.ts`.
+- Vercel functions moved to `bom1` (Mumbai), the same region as the Atlas cluster.
+- Home page "Also at …" lookup now groups keys only instead of loading full offers.
