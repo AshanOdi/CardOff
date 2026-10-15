@@ -7,8 +7,8 @@
  */
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { BANKS, CATEGORIES, OFFER_TYPES } from "@/lib/schema/offer";
-import { BANK_LABELS, CATEGORY_LABELS, OFFER_TYPE_LABELS } from "@/lib/labels";
+import { BANKS, CATEGORIES, OFFER_TYPES, SORTS } from "@/lib/schema/offer";
+import { BANK_LABELS, CATEGORY_LABELS, OFFER_TYPE_LABELS, SORT_LABELS } from "@/lib/labels";
 
 const SELECT_CLASS =
   "rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600";
@@ -95,6 +95,20 @@ export function FilterBar() {
         {BANKS.map((b) => (
           <option key={b} value={b}>
             {BANK_LABELS[b]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        aria-label="Sort by"
+        value={params.get("sort") ?? "best"}
+        // "best" is the default, so keep it out of the URL.
+        onChange={(e) => update("sort", e.target.value === "best" ? "" : e.target.value)}
+        className={`${SELECT_CLASS} sm:ml-auto`}
+      >
+        {SORTS.map((s) => (
+          <option key={s} value={s}>
+            {SORT_LABELS[s]}
           </option>
         ))}
       </select>
