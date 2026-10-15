@@ -8,6 +8,18 @@ import { BankSchema, CategorySchema, OfferTypeSchema, type Offer } from "./schem
 
 export const PAGE_SIZE = 24;
 
+/**
+ * Active = not marked expired by the scraper AND not past its end date.
+ * The date check matters when a bank's scrape fails for a few days: its
+ * offers never get marked expired, but they still drop off the site on time.
+ */
+export function activeOfferFilter(now = new Date()) {
+  return {
+    isExpired: false,
+    $or: [{ validUntil: { $exists: false } }, { validUntil: null }, { validUntil: { $gte: now } }],
+  };
+}
+
 /** Query params from the URL. Anything invalid is dropped rather than erroring. */
 export const OfferFiltersSchema = z.object({
   bank: BankSchema.optional().catch(undefined),
@@ -45,13 +57,13 @@ export function parseFilters(params: URLSearchParams | Record<string, string | s
 export async function getOffers(filters: OfferFilters): Promise<OfferPage> {
   await dbConnect();
 
-  const query: Record<string, unknown> = { isExpired: false };
+  const query: Record<string, unknown> = { ...activeOfferFilter() };
   if (filters.bank) query.bank = filters.bank;
   if (filters.category) query.category = filters.category;
   if (filters.type) query.offerType = filters.type;
   if (filters.q) {
     const re = new RegExp(escapeRegex(filters.q), "i");
-    query.$or = [{ merchant: re }, { title: re }];
+    query.$and = [{ $or: [{ merchant: re }, { title: re }] }];
   }
 
   const [docs, total] = await Promise.all([
