@@ -167,3 +167,5 @@ One logical change per commit, small enough to explain in one sentence.
   the shared `scraper/pipeline.ts`.
 - Vercel functions moved to `bom1` (Mumbai), the same region as the Atlas cluster.
 - Home page "Also at …" lookup now groups keys only instead of loading full offers.
+- Verified: Vercel (`bom1`) can reach combank.lk. Manual cron run scraped 78 offers
+  (6 new) in 34s with descriptions for 77; unauthenticated calls get 401.
