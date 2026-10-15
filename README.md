@@ -27,17 +27,18 @@ Tailwind CSS · GitHub Actions · Vercel · Node's built-in test runner
 ## How it works
 
 ```
-GitHub Actions — daily 06:00 Sri Lanka time
-  └─ scraper/run.ts
-       ├─ banks/hnb.ts       HNB: public JSON API (list + per-offer detail)
-       ├─ banks/combank.ts   Commercial Bank: server-rendered HTML (listing + detail pages)
-       ├─ parseDiscount      classify: percentage / cashback / installment / other
-       ├─ category           keyword-based category detection
-       └─ db.ts              bulk upsert by bank + sourceUrl, expire ended or removed offers
+GitHub Actions — daily 06:00 SL        Vercel Cron — daily 06:00 SL
+  └─ HNB                                 └─ /api/cron/scrape → Commercial Bank
+            \                           /
+             scraper/pipeline.ts  (same code path for both)
+               ├─ banks/hnb.ts       HNB: public JSON API (list + per-offer detail)
+               ├─ banks/combank.ts   Commercial Bank: server-rendered HTML
+               ├─ parseDiscount      percentage / cashback / installment / other
+               └─ db.ts              bulk upsert by bank + sourceUrl, expire old offers
                                     ▼
-                              MongoDB Atlas
+                         MongoDB Atlas (Mumbai)
                                     ▼
-Next.js on Vercel
+Next.js on Vercel (bom1, next to the DB)
   ├─ /             offer grid, server-rendered, filters in the URL
   ├─ /compare      merchants with offers from 2+ banks
   └─ /api/offers   JSON API: ?bank= &category= &type= &q= &page=
@@ -64,6 +65,12 @@ rather than "no data".
 "12 Months – 3.5% · 36 Months – 9%", which a naive parser shows as "9% off". Clauses about
 commission or handling fees are excluded from discount parsing, and installment offers say
 "0%" only when the bank does.
+
+**A bank that blocks CI.** combank.lk's WAF also refuses GitHub Actions runner IPs
+(confirmed with a throwaway probe workflow, since HNB worked from the same runner). Commercial
+Bank is scraped by Vercel Cron instead, through the same `scraper/pipeline.ts` code. The route
+is protected by `CRON_SECRET`. Separately, the site hides offers past their end date at query
+time, so a bank whose scrape keeps failing never shows expired deals.
 
 **One bad run shouldn't empty the site.** Offers missing from a scrape are marked expired,
 except when a run finds fewer than half the currently active offers. That points to a
@@ -96,6 +103,7 @@ docker run -d --name lcd-mongo -p 127.0.0.1:27017:27017 mongo
 |---|---|
 | `npm run scrape` | Scrape all banks and write to MongoDB |
 | `npm run scrape -- --dry-run` | Scrape and print a summary, no DB needed |
+| `SCRAPE_BANKS=hnb npm run scrape` | Scrape only the listed banks |
 | `npm test` | Unit tests: parsers, scrapers, merchant matching (fixtures from real bank pages) |
 | `npm run type-check` | TypeScript check |
 
