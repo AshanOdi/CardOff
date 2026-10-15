@@ -18,6 +18,9 @@ export const CATEGORIES = [
   "other",
 ] as const;
 
+/** Listing sort orders (URL ?sort=). Lives here so client components can import it. */
+export const SORTS = ["best", "ending", "newest"] as const;
+
 export const BankSchema = z.enum(BANKS);
 export const OfferTypeSchema = z.enum(OFFER_TYPES);
 export const CategorySchema = z.enum(CATEGORIES);
@@ -42,6 +45,7 @@ export type Bank = z.infer<typeof BankSchema>;
 export type OfferType = z.infer<typeof OfferTypeSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 export type OfferInput = z.infer<typeof OfferInputSchema>;
+export type Sort = (typeof SORTS)[number];
 
 /** An offer as stored in the DB (adds lifecycle fields). */
 export type Offer = OfferInput & {

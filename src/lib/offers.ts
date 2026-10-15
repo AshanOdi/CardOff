@@ -4,12 +4,9 @@
 import { z } from "zod";
 import { dbConnect } from "./db/connect";
 import { OfferModel } from "./models/offer.model";
-import { BankSchema, CategorySchema, OfferTypeSchema, type Offer } from "./schema/offer";
+import { BankSchema, CategorySchema, OfferTypeSchema, SORTS, type Offer, type Sort } from "./schema/offer";
 
 export const PAGE_SIZE = 24;
-
-export const SORTS = ["best", "ending", "newest"] as const;
-export type Sort = (typeof SORTS)[number];
 
 // Offers with no end date sort as "ends far in the future" so they don't
 // crowd the top of "Ending soon" (Mongo puts missing values first otherwise).
