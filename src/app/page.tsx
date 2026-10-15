@@ -57,7 +57,13 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
       <Pagination
         page={page}
         totalPages={totalPages}
-        params={{ bank: filters.bank, category: filters.category, type: filters.type, q: filters.q }}
+        params={{
+          bank: filters.bank,
+          category: filters.category,
+          type: filters.type,
+          q: filters.q,
+          sort: filters.sort === "best" ? undefined : filters.sort,
+        }}
       />
     </main>
   );
