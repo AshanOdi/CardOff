@@ -1,7 +1,7 @@
 /**
  * Display labels for enum values shown in the UI.
  */
-import type { Bank, Category, OfferType } from "./schema/offer";
+import type { Bank, Category, OfferType, Sort } from "./schema/offer";
 
 export const BANK_LABELS: Record<Bank, string> = {
   hnb: "HNB",
@@ -25,6 +25,12 @@ export const OFFER_TYPE_LABELS: Record<OfferType, string> = {
   cashback: "Cashback",
   installment: "0% Installments",
   other: "Other",
+};
+
+export const SORT_LABELS: Record<Sort, string> = {
+  best: "Biggest discount",
+  ending: "Ending soon",
+  newest: "Newest",
 };
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", {
