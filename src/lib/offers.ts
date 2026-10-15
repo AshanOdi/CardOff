@@ -8,6 +8,19 @@ import { BankSchema, CategorySchema, OfferTypeSchema, type Offer } from "./schem
 
 export const PAGE_SIZE = 24;
 
+export const SORTS = ["best", "ending", "newest"] as const;
+export type Sort = (typeof SORTS)[number];
+
+// Offers with no end date sort as "ends far in the future" so they don't
+// crowd the top of "Ending soon" (Mongo puts missing values first otherwise).
+const FAR_FUTURE = new Date("9999-12-31T00:00:00Z");
+
+const SORT_STAGES: Record<Sort, Record<string, 1 | -1>> = {
+  best: { discountPercentage: -1, _end: 1, _id: 1 },
+  ending: { _end: 1, discountPercentage: -1, _id: 1 },
+  newest: { createdAt: -1, discountPercentage: -1, _id: 1 },
+};
+
 /**
  * Active = not marked expired by the scraper AND not past its end date.
  * The date check matters when a bank's scrape fails for a few days: its
@@ -26,6 +39,7 @@ export const OfferFiltersSchema = z.object({
   category: CategorySchema.optional().catch(undefined),
   type: OfferTypeSchema.optional().catch(undefined),
   q: z.string().trim().max(100).optional().catch(undefined),
+  sort: z.enum(SORTS).catch("best").default("best"),
   page: z.coerce.number().int().min(1).max(1000).catch(1).default(1),
 });
 
@@ -50,6 +64,7 @@ export function parseFilters(params: URLSearchParams | Record<string, string | s
     category: get("category"),
     type: get("type"),
     q: get("q"),
+    sort: get("sort"),
     page: get("page"),
   });
 }
@@ -67,12 +82,14 @@ export async function getOffers(filters: OfferFilters): Promise<OfferPage> {
   }
 
   const [docs, total] = await Promise.all([
-    OfferModel.find(query)
-      // Biggest discounts first, then offers ending soonest.
-      .sort({ discountPercentage: -1, validUntil: 1, _id: 1 })
-      .skip((filters.page - 1) * PAGE_SIZE)
-      .limit(PAGE_SIZE)
-      .lean(),
+    OfferModel.aggregate([
+      { $match: query },
+      { $addFields: { _end: { $ifNull: ["$validUntil", FAR_FUTURE] } } },
+      { $sort: SORT_STAGES[filters.sort] },
+      { $skip: (filters.page - 1) * PAGE_SIZE },
+      { $limit: PAGE_SIZE },
+      { $project: { _end: 0, __v: 0 } },
+    ]),
     OfferModel.countDocuments(query),
   ]);
 
