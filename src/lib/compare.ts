@@ -2,6 +2,7 @@
  * Cross-bank comparison: merchants that currently have offers from 2+ banks.
  */
 import { dbConnect } from "./db/connect";
+import { activeOfferFilter } from "./offers";
 import { OfferModel } from "./models/offer.model";
 import type { Bank, Offer } from "./schema/offer";
 
@@ -17,7 +18,7 @@ export async function getMerchantComparisons(): Promise<MerchantComparison[]> {
   await dbConnect();
 
   const groups = await OfferModel.aggregate<{ _id: string; banks: Bank[]; offers: Offer[] }>([
-    { $match: { isExpired: false, merchantKey: { $type: "string" } } },
+    { $match: { ...activeOfferFilter(), merchantKey: { $type: "string" } } },
     // Best offers first inside each group.
     { $sort: { discountPercentage: -1, validUntil: 1 } },
     { $group: { _id: "$merchantKey", banks: { $addToSet: "$bank" }, offers: { $push: "$$ROOT" } } },
