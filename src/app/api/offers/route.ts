@@ -1,5 +1,6 @@
 /**
- * GET /api/offers?bank=hnb&category=dining&type=percentage&q=pizza&page=2
+ * GET /api/offers?bank=hnb&category=dining&type=percentage&q=pizza&sort=ending&page=2
+ *   sort: best (default) | ending | newest
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { getOffers, parseFilters } from "@/lib/offers";
