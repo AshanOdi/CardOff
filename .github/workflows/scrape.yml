@@ -24,3 +24,6 @@ jobs:
       - run: npm run scrape
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          # combank.lk's WAF blocks GitHub-hosted runner IPs — Commercial Bank
+          # is scraped by Vercel Cron instead (vercel.json).
+          SCRAPE_BANKS: hnb
