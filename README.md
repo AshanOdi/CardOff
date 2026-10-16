@@ -10,7 +10,7 @@ Banks publish their card offers on separate sites, each with its own layout. Thi
 app scrapes them every morning, cleans the data into one format, and lets you search,
 filter, and compare offers for the same merchant across banks.
 
-- **~940 live offers** from HNB and Commercial Bank
+- **~1,080 live offers** from HNB, Commercial Bank and People's Bank
 - **Compare banks:** merchants offered by more than one bank, side by side, with the best deal highlighted
 - **Filters** by category, offer type (discount / cashback / installment), bank, and merchant search, all kept in the URL so links are shareable
 - **Runs on free tiers only:** Vercel Hobby, MongoDB Atlas M0, GitHub Actions
@@ -28,11 +28,12 @@ Tailwind CSS · GitHub Actions · Vercel · Node's built-in test runner
 
 ```
 GitHub Actions — daily 06:00 SL        Vercel Cron — daily 06:00 SL
-  └─ HNB                                 └─ /api/cron/scrape → Commercial Bank
+  └─ HNB                                 └─ /api/cron/scrape → Commercial Bank, People's Bank
             \                           /
              scraper/pipeline.ts  (same code path for both)
                ├─ banks/hnb.ts       HNB: public JSON API (list + per-offer detail)
                ├─ banks/combank.ts   Commercial Bank: server-rendered HTML
+               ├─ banks/peoples.ts   People's Bank: WordPress category pages
                ├─ parseDiscount      percentage / cashback / installment / other
                └─ db.ts              bulk upsert by bank + sourceUrl, expire old offers
                                     ▼
@@ -81,6 +82,21 @@ broken scrape, not to the bank removing its offers.
 "restaurants" from names would wrongly match "Softlogic Restaurants" with an unrelated
 "Softlogic" retail offer.
 
+### People's Bank data source
+
+WordPress with the REST API disabled, so the scraper reads the 13 category pages
+with `?cardType=credit_card` (the filter is applied server-side). Each offer card carries
+clean `data-*` attributes on its footer buttons, with dates as `YYYYMMDD` on the calendar
+button, so no detail pages are needed. Some category pages take 20s+ to render, which
+is why the HTTP timeout is 45s.
+
+### Banks deliberately not scraped
+
+Sampath, NTB and BOC sit behind bot protection: Sampath's API returns empty `data` to
+non-browser clients and its site answers headless Chrome with "Request Rejected". Getting
+past that would need paid proxies or evading the bank's protection, which is outside this
+project's free-tier scope and against the banks' wishes.
+
 ## Local setup
 
 ```bash
@@ -111,7 +127,7 @@ CI runs type-check, tests, and a production build on every push.
 
 ## Roadmap
 
-- More banks (Sampath, NTB and BOC need a headless browser because of bot protection)
+- American Express (NTB): plain server-rendered pages, next candidate
 - Offer detail page, and "ending soon" sorting
 - Email alerts for a chosen merchant or category
 
