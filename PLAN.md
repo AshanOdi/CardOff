@@ -169,3 +169,12 @@ One logical change per commit, small enough to explain in one sentence.
 - Home page "Also at …" lookup now groups keys only instead of loading full offers.
 - Verified: Vercel (`bom1`) can reach combank.lk. Manual cron run scraped 78 offers
   (6 new) in 34s with descriptions for 77; unauthenticated calls get 401.
+
+**2026-10-16**
+- Sort options: biggest discount / ending soon / newest (`?sort=`), offers with no end
+  date sort last for "ending soon".
+- Sampath investigated and dropped: API returns empty data to non-browsers and the site
+  rejects headless Chrome. It needs bot-protection evasion, which is out of scope.
+- People's Bank scraper (WordPress category pages, ~140 offers, no detail pages). Runs
+  from Vercel Cron alongside Commercial Bank (~40s). Site now has ~1,080 offers and the
+  compare page has 31 merchants (Keells across all three banks).
