@@ -5,7 +5,8 @@
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
-const TIMEOUT_MS = 20_000;
+// Some bank sites (People's Bank category pages) take 20s+ to render.
+const TIMEOUT_MS = 45_000;
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
