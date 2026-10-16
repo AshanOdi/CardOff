@@ -6,11 +6,13 @@
 import { BANKS, type Bank, type OfferInput } from "../src/lib/schema/offer";
 import { scrapeComBank } from "./banks/combank";
 import { scrapeHnb } from "./banks/hnb";
+import { scrapePeoples } from "./banks/peoples";
 import { expireOffers, upsertOffers } from "./db";
 
 export const SCRAPERS: Record<Bank, () => Promise<OfferInput[]>> = {
   hnb: scrapeHnb,
   commercial_bank: scrapeComBank,
+  peoples_bank: scrapePeoples,
 };
 
 export interface BankRunResult {

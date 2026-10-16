@@ -6,6 +6,7 @@ import type { Bank, Category, OfferType, Sort } from "./schema/offer";
 export const BANK_LABELS: Record<Bank, string> = {
   hnb: "HNB",
   commercial_bank: "Commercial Bank",
+  peoples_bank: "People's Bank",
 };
 
 export const CATEGORY_LABELS: Record<Category, string> = {
