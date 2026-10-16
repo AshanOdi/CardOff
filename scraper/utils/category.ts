@@ -7,7 +7,7 @@ import type { Category, OfferType } from "../../src/lib/schema/offer";
 export function detectCategory(text: string, offerType: OfferType): Category {
   const t = text.toLowerCase();
   if (/dine|din-in|dining|restaurant|cafe|pizza|burger|taco|buffet|bakery|lunch|dinner|take-?away/.test(t)) return "dining";
-  if (/hotel|resort|villa|room only|\b(bb|hb|fb)\b|half board|full board|travel|airline|holiday|tour|destination|journey to|relax at/.test(t)) return "travel";
+  if (/hotel|resort|villa|room only|\b(bb|hb|fb)\b|half board|full board|travel|airline|holiday|tour|destination|journey to|relax at|bungalow|suites|best available rate|per room|\d+\s+nights?/.test(t)) return "travel";
   if (/supermarket|grocery|groceries|keells|cargills|arpico|glomark|laugfs super/.test(t)) return "groceries";
   if (/fuel|petrol|filling station/.test(t)) return "fuel";
   if (/optic|spectacle|frames|eye care|hospital|pharmacy|clinic|medical|hearing|dental|channel+ing/.test(t)) return "health";
