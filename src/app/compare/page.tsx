@@ -34,7 +34,7 @@ export default async function ComparePage() {
           return (
             <li key={c.key} id={c.key} className="scroll-mt-6 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="mb-3 text-lg font-semibold">{c.name}</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className={`grid gap-3 sm:grid-cols-2 ${c.banks.length >= 3 ? "lg:grid-cols-3" : ""}`}>
                 {BANKS.filter((b) => c.banks.includes(b)).map((bank) => (
                   <BankColumn
                     key={bank}
