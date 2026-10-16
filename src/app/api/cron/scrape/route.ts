@@ -1,8 +1,9 @@
 /**
- * GET /api/cron/scrape?banks=commercial_bank
+ * GET /api/cron/scrape?banks=commercial_bank,peoples_bank
  *
  * Called daily by Vercel Cron (see vercel.json). Exists because combank.lk's
  * WAF blocks GitHub Actions runner IPs; HNB still runs from GitHub Actions.
+ * People's Bank runs here too so the slow-page banks share one schedule.
  *
  * Protected by CRON_SECRET: Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`.
  */
@@ -11,7 +12,7 @@ import { dbConnect } from "@/lib/db/connect";
 import { parseBankList, scrapeAndSave, type BankRunResult } from "../../../../../scraper/pipeline";
 
 export const dynamic = "force-dynamic";
-// Commercial Bank takes ~1 min (throttled detail pages); leave headroom.
+// Commercial Bank ~35s + People's Bank ~40s; leave headroom.
 export const maxDuration = 300;
 
 const DEFAULT_BANKS = "commercial_bank";
